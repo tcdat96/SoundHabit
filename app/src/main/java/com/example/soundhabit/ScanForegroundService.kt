@@ -26,11 +26,13 @@ class ScanForegroundService : Service() {
             val context = this@ScanForegroundService
             AppChecker()
                 .whenAny { packageName ->
-                    if (prevPackage != packageName) {
-                        // save current volume for previous app
+                    if (packageName.isNotEmpty() && prevPackage != packageName) {
                         val currVolume = AudioUtil.getCurrentVolume(context)
-                        StorageUtil.saveCurrentVolume(prevPackage, currVolume)
-                        Log.d(TAG, "$prevPackage: saved as $currVolume");
+                        // save current volume for previous app
+                        if (StorageUtil.hasPackage(prevPackage)) {
+                            StorageUtil.saveCurrentVolume(prevPackage, currVolume)
+                            Log.d(TAG, "$prevPackage: saved as $currVolume")
+                        }
                         // load previously saved volume of current app
                         StorageUtil.getPreviousVolume(packageName)?.let {
                             if (it != currVolume) {
