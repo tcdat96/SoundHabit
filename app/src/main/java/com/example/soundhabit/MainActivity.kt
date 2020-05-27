@@ -2,24 +2,25 @@ package com.example.soundhabit
 
 import StorageUtil
 import android.content.Intent
-import android.content.res.Resources
 import android.os.Bundle
 import android.provider.Settings
-import android.util.TypedValue
+import android.util.Log
 import android.view.View
+import android.widget.Adapter
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.children
+import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.soundhabit.ui.adapter.GridSpacingItemDecoration
 import com.example.soundhabit.ui.adapter.InstalledAppAdapter
 import com.example.soundhabit.utils.AppInfoUtil
+import com.example.soundhabit.utils.ViewUtil.dpToPx
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlin.math.roundToInt
 
 
 class MainActivity : AppCompatActivity() {
@@ -28,13 +29,15 @@ class MainActivity : AppCompatActivity() {
         const val TAG = "MainActivity"
     }
 
+    private var appListRecyclerView: RecyclerView? = null
     private var appAdapter: InstalledAppAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        setupToolbarTitle()
+        setUpToolbarTitle()
+        setUpSearchBox()
 
         // retrieve installed applications
         AppInfoUtil.getInstalledApps(this)?.run {
@@ -55,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupToolbarTitle() {
+    private fun setUpToolbarTitle() {
         val collapsingToolbarLayout = findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
         val searchArea = collapsingToolbarLayout.children.iterator().next()
 
@@ -63,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         var scrollRange = -1
         appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
             if (scrollRange == -1) {
-                scrollRange = appBarLayout.totalScrollRange!!
+                scrollRange = appBarLayout.totalScrollRange
             }
             if (scrollRange + verticalOffset == 0) {
                 collapsingToolbarLayout.title = getString(R.string.app_name)
@@ -78,12 +81,27 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun setUpSearchBox() {
+        findViewById<EditText>(R.id.et_search_box).apply {
+            doOnTextChanged { text, _, _, _ ->
+                // preserve user's viewpoint
+                val layoutManager = appListRecyclerView?.layoutManager
+                val state = layoutManager?.onSaveInstanceState()
+                // filter query
+                val query = text.toString().trim()
+                appAdapter?.filter(query)
+                state?.run { layoutManager.onRestoreInstanceState(state) }
+            }
+        }
+    }
+
     private fun initInstalledAppsList() {
-        val appsRv = findViewById<RecyclerView>(R.id.rv_installed_apps).apply {
-            layoutManager = GridLayoutManager(context, 2)
+        findViewById<RecyclerView>(R.id.rv_installed_apps).apply {
+            val spanCount = 2
+            layoutManager = GridLayoutManager(context, spanCount)
             itemAnimator = DefaultItemAnimator()
             adapter = appAdapter
-            addItemDecoration(GridSpacingItemDecoration(2, dpToPx(16f)))
+            addItemDecoration(GridSpacingItemDecoration(spanCount, dpToPx(context, 16f)))
             setHasFixedSize(true)
         }
     }
@@ -92,10 +110,5 @@ class MainActivity : AppCompatActivity() {
         Intent(this@MainActivity, ScanForegroundService::class.java).also { intent ->
 //            ContextCompat.startForegroundService(this@MainActivity, intent)
         }
-    }
-
-    private fun dpToPx(dp: Float): Int {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
-            .roundToInt()
     }
 }

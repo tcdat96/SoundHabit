@@ -26,8 +26,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
+                android:layout_marginTop="@dimen/spacing_large"
                 android:orientation="vertical"
-                android:layout_marginTop="24dp"
                 android:paddingLeft="@dimen/spacing_large"
                 android:paddingRight="@dimen/spacing_large">
 
@@ -35,21 +35,22 @@
                     android:id="@+id/tv_welcome"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="GOOD MORNING :)"
-                    android:textColor="#555555"
-                    android:textSize="16sp" />
+                    android:text="GOOD MORNING 🌅"
+                    android:textColor="#616161"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/et_search_box"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:background="@null"
                     android:hint="@string/hint_search_apps"
                     android:importantForAutofill="no"
                     android:inputType="text"
-                    android:background="@null"
                     android:maxLines="1"
                     android:textColor="@color/colorAccent"
-                    android:layout_marginTop="@dimen/spacing_medium"
                     android:textSize="@dimen/text_size_search_box" />
 
             </LinearLayout>
@@ -68,6 +69,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="?attr/actionBarSize"
         app:contentScrim="@color/mainBackground"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
@@ -81,7 +83,10 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_installed_apps"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/spacing_small"
+            android:paddingRight="@dimen/spacing_small" />
+
     </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

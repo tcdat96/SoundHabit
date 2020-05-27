@@ -3,7 +3,8 @@ package com.example.soundhabit.ui.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -14,12 +15,12 @@ import com.example.soundhabit.data.AppInfo
 class InstalledAppAdapter(private val apps: List<AppInfo>) :
     RecyclerView.Adapter<InstalledAppAdapter.AppItemViewHolder>() {
 
-    private val shownApps = arrayListOf<AppInfo>()
+    private val shownApps = ArrayList(apps)
 
     private val onItemClickListener = object :
         OnItemClickListener {
         override fun onClick(view: View, position: Int) {
-            apps[position].enabled = !apps[position].enabled
+            shownApps[position].enabled = !shownApps[position].enabled
             notifyItemChanged(position)
         }
     }
@@ -30,12 +31,29 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
         return AppItemViewHolder(view, onItemClickListener)
     }
 
-    override fun getItemCount() = apps.size
+    override fun getItemCount() = shownApps.size
 
     override fun onBindViewHolder(holder: AppItemViewHolder, position: Int) {
-        val app = apps[position]
+        val app = shownApps[position]
         holder.bind(app)
     }
+
+    fun filter(query: String) {
+        val filteredList = apps.filter { it.name.contains(query, true) }
+        filter(filteredList)
+    }
+
+    private fun filter(newList: List<AppInfo>) {
+        val diffCallback = AppDiffCallback(shownApps, newList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        shownApps.clear()
+        shownApps.addAll(newList)
+
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    enum class FilterMode { SHOW_ALL, SHOW_ENABLED, SHOW_DISABLED}
 
     interface OnItemClickListener {
         fun onClick(view: View, position: Int)
