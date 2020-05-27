@@ -15,7 +15,11 @@ object AppInfoUtil {
         return pm
             ?.getInstalledApplications(PackageManager.GET_META_DATA)
             ?.filter { !isSystemPackage(pm, it) }
-            ?.map { AppInfo(it.packageName, it.loadIcon(pm)) }
+            ?.map { info ->
+                val appName = pm.getApplicationLabel(info) as String
+                AppInfo(info.packageName, appName, info.loadIcon(pm))
+            }
+            ?.sortedBy { it.name }
     }
 
     private fun isSystemPackage(pm: PackageManager, pkgInfo: ApplicationInfo): Boolean {
