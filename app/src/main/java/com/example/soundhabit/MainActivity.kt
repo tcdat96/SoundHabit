@@ -4,11 +4,10 @@ import StorageUtil
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
-import android.widget.Adapter
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -16,10 +15,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.soundhabit.ui.adapter.GridSpacingItemDecoration
 import com.example.soundhabit.ui.adapter.InstalledAppAdapter
+import com.example.soundhabit.ui.adapter.InstalledAppAdapter.FilterMode
 import com.example.soundhabit.utils.AppInfoUtil
 import com.example.soundhabit.utils.ViewUtil.dpToPx
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.chip.Chip
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
         setUpToolbarTitle()
         setUpSearchBox()
+        setUpFilterChips()
 
         // retrieve installed applications
         AppInfoUtil.getInstalledApps(this)?.run {
@@ -95,6 +97,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setUpFilterChips() {
+        val listener = View.OnClickListener {
+            when (it.id) {
+                R.id.chip_all_apps -> FilterMode.SHOW_ALL
+                R.id.chip_enabled_apps -> FilterMode.SHOW_ENABLED
+                R.id.chip_disabled_apps -> FilterMode.SHOW_DISABLED
+                else -> FilterMode.SHOW_ALL
+            }.let { mode ->
+                appAdapter?.filter(filterMode = mode)
+            }
+        }
+
+        findViewById<Chip>(R.id.chip_all_apps).setOnClickListener(listener)
+        findViewById<Chip>(R.id.chip_enabled_apps).setOnClickListener(listener)
+        findViewById<Chip>(R.id.chip_disabled_apps).setOnClickListener(listener)
+    }
+
     private fun initInstalledAppsList() {
         findViewById<RecyclerView>(R.id.rv_installed_apps).apply {
             val spanCount = 2
@@ -108,7 +127,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startService() {
         Intent(this@MainActivity, ScanForegroundService::class.java).also { intent ->
-//            ContextCompat.startForegroundService(this@MainActivity, intent)
+            ContextCompat.startForegroundService(this@MainActivity, intent)
         }
     }
 }

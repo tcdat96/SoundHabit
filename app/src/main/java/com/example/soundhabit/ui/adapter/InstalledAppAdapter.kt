@@ -16,6 +16,8 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
     RecyclerView.Adapter<InstalledAppAdapter.AppItemViewHolder>() {
 
     private val shownApps = ArrayList(apps)
+    private var currFilterMode = FilterMode.SHOW_ALL
+    private var currQuery = ""
 
     private val onItemClickListener = object :
         OnItemClickListener {
@@ -38,9 +40,17 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
         holder.bind(app)
     }
 
-    fun filter(query: String) {
-        val filteredList = apps.filter { it.name.contains(query, true) }
-        filter(filteredList)
+    fun filter(query: String = currQuery, filterMode: FilterMode = currFilterMode) {
+        currFilterMode = filterMode
+        currQuery = query
+
+        when (filterMode) {
+            FilterMode.SHOW_ALL -> apps
+            FilterMode.SHOW_ENABLED -> apps.filter { it.enabled }
+            FilterMode.SHOW_DISABLED -> apps.filter { !it.enabled }
+        }
+            .filter { it.name.contains(query, true) }
+            .run { filter(this) }
     }
 
     private fun filter(newList: List<AppInfo>) {
@@ -53,7 +63,7 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
         diffResult.dispatchUpdatesTo(this)
     }
 
-    enum class FilterMode { SHOW_ALL, SHOW_ENABLED, SHOW_DISABLED}
+    enum class FilterMode { SHOW_ALL, SHOW_ENABLED, SHOW_DISABLED }
 
     interface OnItemClickListener {
         fun onClick(view: View, position: Int)
@@ -74,7 +84,8 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
             iconImageView.setImageDrawable(appInfo.icon)
 
             container?.run {
-                val backgroundColor = ContextCompat.getColor(itemView.context,
+                val backgroundColor = ContextCompat.getColor(
+                    itemView.context,
                     if (appInfo.enabled) R.color.appEnabledBackground else R.color.appDisabledBackground
                 )
                 setBackgroundColor(backgroundColor)

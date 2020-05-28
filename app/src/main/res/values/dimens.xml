@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="expanded_toolbar_height">200dp</dimen>
+    <dimen name="expanded_toolbar_height">240dp</dimen>
 
-    <dimen name="text_size_search_box">28sp</dimen>
+    <dimen name="text_size_search_box">30sp</dimen>
     <dimen name="text_size_medium">16sp</dimen>
 
     <dimen name="spacing_xsmall">4dp</dimen>
