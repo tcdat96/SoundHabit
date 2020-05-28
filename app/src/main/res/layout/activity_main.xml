@@ -142,23 +142,17 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="?attr/actionBarSize"
         app:contentScrim="@color/mainBackground"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Hello World!"
-            android:visibility="gone" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_installed_apps"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipToPadding="false"
             android:paddingLeft="@dimen/spacing_small"
-            android:paddingRight="@dimen/spacing_small" />
+            android:paddingRight="@dimen/spacing_small"
+            android:paddingBottom="?attr/actionBarSize" />
 
     </FrameLayout>
 

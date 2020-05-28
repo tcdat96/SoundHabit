@@ -2,6 +2,7 @@ package com.example.soundhabit
 
 import StorageUtil
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
@@ -46,11 +47,10 @@ class MainActivity : AppCompatActivity() {
         // retrieve installed applications
         AppInfoUtil.getInstalledApps(this)?.run {
             forEach { StorageUtil.savePackage(it.name) }
-            appAdapter =
-                InstalledAppAdapter(this)
+            appAdapter = InstalledAppAdapter(this)
         }
 
-        initInstalledAppsList()
+        setUpAppsListView()
     }
 
     override fun onStart() {
@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tv_greeting).text = DataUtil.generateGreeting()
 
         val collapsingToolbarLayout = findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
+            .apply { setCollapsedTitleTextColor(Color.BLACK) }
         val searchArea = collapsingToolbarLayout.children.iterator().next()
 
         var isShown = true
@@ -98,6 +99,14 @@ class MainActivity : AppCompatActivity() {
                 appAdapter?.filter(query)
                 state?.run { layoutManager.onRestoreInstanceState(state) }
             }
+
+            // workaround for views being cut off issue
+            setOnFocusChangeListener { _, _ ->
+                appListRecyclerView?.run {
+                    setPadding(paddingLeft, paddingTop, paddingRight, 0)
+                }
+                onFocusChangeListener = null
+            }
         }
     }
 
@@ -118,8 +127,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<Chip>(R.id.chip_disabled_apps).setOnClickListener(listener)
     }
 
-    private fun initInstalledAppsList() {
-        findViewById<RecyclerView>(R.id.rv_installed_apps).apply {
+    private fun setUpAppsListView() {
+        appListRecyclerView = findViewById<RecyclerView>(R.id.rv_installed_apps).apply {
             val spanCount = 2
             layoutManager = GridLayoutManager(context, spanCount)
             itemAnimator = DefaultItemAnimator()
