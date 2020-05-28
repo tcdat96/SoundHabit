@@ -85,6 +85,7 @@
                     app:layout_constraintEnd_toEndOf="@id/et_search_box"
                     app:layout_constraintStart_toEndOf="@id/tv_filter"
                     app:layout_constraintTop_toBottomOf="@id/et_search_box"
+                    app:selectionRequired="true"
                     app:singleSelection="true">
 
                     <com.google.android.material.chip.Chip
