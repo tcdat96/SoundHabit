@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -17,6 +18,7 @@ import com.example.soundhabit.ui.adapter.GridSpacingItemDecoration
 import com.example.soundhabit.ui.adapter.InstalledAppAdapter
 import com.example.soundhabit.ui.adapter.InstalledAppAdapter.FilterMode
 import com.example.soundhabit.utils.AppInfoUtil
+import com.example.soundhabit.utils.DataUtil
 import com.example.soundhabit.utils.ViewUtil.dpToPx
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
@@ -61,6 +63,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpToolbarTitle() {
+        findViewById<TextView>(R.id.tv_greeting).text = DataUtil.generateGreeting()
+
         val collapsingToolbarLayout = findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
         val searchArea = collapsingToolbarLayout.children.iterator().next()
 
