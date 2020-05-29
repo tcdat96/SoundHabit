@@ -6,8 +6,7 @@
 
     <color name="mainBackground">#FEFEFE</color>
 
-<!--    <color name="appDisabledBackground">#FFDADA</color>-->
-<!--    <color name="appEnabledBackground">#DAFFE4</color>-->
     <color name="appDisabledBackground">#CCCCCC</color>
     <color name="appEnabledBackground">#ACF1B2</color>
+    <color name="volumeLevel">#3d3d3d</color>
 </resources>

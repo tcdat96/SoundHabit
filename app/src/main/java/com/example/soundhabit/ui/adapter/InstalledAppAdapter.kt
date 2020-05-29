@@ -71,8 +71,13 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
 
     inner class AppItemViewHolder(itemView: View, private val listener: OnItemClickListener) :
         RecyclerView.ViewHolder(itemView), View.OnClickListener {
-        private var nameTextView: TextView = itemView.findViewById(R.id.tv_package_name)
-        private var iconImageView: ImageView = itemView.findViewById(R.id.iv_app_icon)
+        private val nameTextView: TextView = itemView.findViewById(R.id.tv_package_name)
+        private val iconImageView: ImageView = itemView.findViewById(R.id.iv_app_icon)
+        private val volumeLevelTextViews = listOf<TextView>(
+            itemView.findViewById(R.id.tv_speaker_volume),
+            itemView.findViewById(R.id.tv_wired_volume),
+            itemView.findViewById(R.id.tv_bluetooth_volume)
+        )
         private var container = nameTextView.parent as? ConstraintLayout
 
         init {
@@ -89,6 +94,13 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
                     if (appInfo.enabled) R.color.appEnabledBackground else R.color.appDisabledBackground
                 )
                 setBackgroundColor(backgroundColor)
+            }
+
+            appInfo.soundProfile?.run {
+                volumeLevelTextViews.forEachIndexed { index, textView ->
+                    textView.text = if (enabled[index] && volumes[index] > -1)
+                        volumes[index].toString() else "—"
+                }
             }
         }
 

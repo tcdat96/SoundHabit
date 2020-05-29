@@ -10,16 +10,14 @@ import android.os.Process
 import com.example.soundhabit.data.AppInfo
 
 object AppInfoUtil {
-    fun getInstalledApps(context: Context): List<AppInfo>? {
+    fun getInstalledApps(context: Context): MutableList<AppInfo>? {
         val pm = context.packageManager
-        return pm
-            ?.getInstalledApplications(PackageManager.GET_META_DATA)
-            ?.filter { !isSystemPackage(pm, it) }
-            ?.map { info ->
+        return pm?.getInstalledApplications(PackageManager.GET_META_DATA)?.run {
+            filter { !isSystemPackage(pm, it) }.map { info ->
                 val appName = pm.getApplicationLabel(info) as String
                 AppInfo(info.packageName, appName, info.loadIcon(pm))
-            }
-            ?.sortedBy { it.name }
+            }.sortedBy { it.name }.toMutableList()
+        }
     }
 
     private fun isSystemPackage(pm: PackageManager, pkgInfo: ApplicationInfo): Boolean {

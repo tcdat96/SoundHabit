@@ -25,6 +25,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.chip.Chip
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.serialization.UnstableDefault
 
 
 class MainActivity : AppCompatActivity() {
@@ -43,22 +44,31 @@ class MainActivity : AppCompatActivity() {
         setUpToolbarTitle()
         setUpSearchBox()
         setUpFilterChips()
-
-        // retrieve installed applications
-        AppInfoUtil.getInstalledApps(this)?.run {
-            forEach { StorageUtil.savePackage(it.name) }
-            appAdapter = InstalledAppAdapter(this)
-        }
-
+        
         setUpAppsListView()
     }
 
+    @UnstableDefault
     override fun onStart() {
         super.onStart()
         if (AppInfoUtil.needUsageStatsPermission(this)) {
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         } else {
             startService()
+            StorageUtil.init(this)
+            // retrieve installed applications
+            AppInfoUtil.getInstalledApps(this)?.run {
+                // save new package or get existing sound profile
+                val iterator = listIterator()
+                while (iterator.hasNext()) {
+                    val appInfo = iterator.next()
+                    appInfo.soundProfile = StorageUtil.savePackage(appInfo.packageName)
+                    iterator.set(appInfo)
+                }
+                // update the adapter
+                appAdapter = InstalledAppAdapter(this)
+                appListRecyclerView?.adapter = appAdapter
+            }
         }
     }
 

@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardElevation="@dimen/elevation_app_card"
-    app:cardCornerRadius="8dp">
+    app:cardCornerRadius="8dp"
+    app:cardElevation="@dimen/elevation_app_card">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -31,11 +31,11 @@
             android:layout_marginStart="@dimen/spacing_large"
             android:layout_marginEnd="@dimen/spacing_large"
             android:layout_weight="1"
-            android:textStyle="bold"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@android:color/black"
             android:textSize="@dimen/text_size_medium"
+            android:textStyle="bold"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -45,20 +45,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_xxlarge"
-            android:drawablePadding="4dp"
+            android:drawablePadding="@dimen/spacing_xxsmall"
             android:gravity="center"
-            android:textColor="@android:color/black"
+            android:textColor="@color/volumeLevel"
             android:textSize="@dimen/text_size_medium"
             app:drawableLeftCompat="@drawable/ic_speaker_black_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@+id/tv_headset_volume"
+            app:layout_constraintRight_toLeftOf="@+id/tv_wired_volume"
             app:layout_constraintTop_toBottomOf="@id/tv_package_name" />
 
         <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/tv_headset_volume"
+            android:id="@+id/tv_wired_volume"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/spacing_xxsmall"
+            android:textColor="@color/volumeLevel"
             android:textSize="@dimen/text_size_medium"
             app:drawableLeftCompat="@drawable/ic_headset_black_24dp"
             app:layout_constraintBottom_toBottomOf="@id/tv_speaker_volume"
@@ -70,10 +72,12 @@
             android:id="@+id/tv_bluetooth_volume"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/spacing_xxsmall"
+            android:textColor="@color/volumeLevel"
             android:textSize="@dimen/text_size_medium"
             app:drawableLeftCompat="@drawable/ic_bluetooth_black_24dp"
             app:layout_constraintBottom_toBottomOf="@id/tv_speaker_volume"
-            app:layout_constraintLeft_toRightOf="@id/tv_headset_volume"
+            app:layout_constraintLeft_toRightOf="@id/tv_wired_volume"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="@id/tv_speaker_volume" />
 

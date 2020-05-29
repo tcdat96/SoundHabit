@@ -8,11 +8,12 @@ import android.content.Intent
 import android.os.*
 import android.util.Log
 import com.rvalerio.fgchecker.AppChecker
+import kotlinx.serialization.UnstableDefault
 
 class ScanForegroundService : Service() {
     companion object {
         const val TAG = "ScanForegroundService"
-        const val SCAN_INTERVAL = 3000
+        const val SCAN_INTERVAL = 5000
         const val CHANNEL_ID = "SCAN_FRGR_CHANNEL_ID"
     }
 
@@ -22,22 +23,24 @@ class ScanForegroundService : Service() {
     private inner class ServiceHandler(looper: Looper) : Handler(looper) {
         private var prevPackage = ""
 
+        @UnstableDefault
         override fun handleMessage(msg: Message) {
             val context = this@ScanForegroundService
             AppChecker()
                 .whenAny { packageName ->
-                    if (packageName.isNotEmpty() && prevPackage != packageName) {
+                    if (packageName != null && packageName.isNotEmpty() && prevPackage != packageName) {
                         val currVolume = AudioUtil.getCurrentVolume(context)
+                        val soundMode = AudioUtil.getSoundMode(context)
                         // save current volume for previous app
                         if (StorageUtil.hasPackage(prevPackage)) {
-                            StorageUtil.saveCurrentVolume(prevPackage, currVolume)
-                            Log.d(TAG, "$prevPackage: saved as $currVolume")
+                            StorageUtil.saveCurrentVolume(prevPackage, soundMode, currVolume)
+                            Log.d(TAG, "$prevPackage: $soundMode at $currVolume")
                         }
                         // load previously saved volume of current app
-                        StorageUtil.getPreviousVolume(packageName)?.let {
+                        StorageUtil.getPreviousVolume(packageName, soundMode)?.let {
                             if (it != currVolume) {
                                 AudioUtil.setCurrentVolume(context, it)
-                                Log.d(TAG, "$packageName: set to $it");
+                                Log.d(TAG, "$packageName: set to $it")
                             }
                         }
 
@@ -81,6 +84,6 @@ class ScanForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "Service is destroyed");
+        Log.d(TAG, "Service is destroyed")
     }
 }
