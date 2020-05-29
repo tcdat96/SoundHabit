@@ -2,7 +2,7 @@
     <string name="app_name">SoundHabit</string>
     <string name="notification_message">Hello</string>
     <string name="channel_name">channel name</string>
-    <string name="hint_search_apps">Search specific app...</string>
+    <string name="hint_search_apps">Search specific app…</string>
     <string name="filter">Filter</string>
     <string name="chip_all_apps">All</string>
     <string name="chip_disabled_apps">Disabled</string>

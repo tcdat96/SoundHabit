@@ -12,25 +12,25 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.soundhabit.R
 import com.example.soundhabit.data.AppInfo
 
-class InstalledAppAdapter(private val apps: List<AppInfo>) :
+class InstalledAppAdapter :
     RecyclerView.Adapter<InstalledAppAdapter.AppItemViewHolder>() {
+
+    var apps: List<AppInfo> = listOf()
+        set(value) {
+            field = value
+            filter()
+        }
 
     private val shownApps = ArrayList(apps)
     private var currFilterMode = FilterMode.SHOW_ALL
     private var currQuery = ""
 
-    private val onItemClickListener = object :
-        OnItemClickListener {
-        override fun onClick(view: View, position: Int) {
-            shownApps[position].enabled = !shownApps[position].enabled
-            notifyItemChanged(position)
-        }
-    }
+    var onItemChangeListener: OnItemChangeListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppItemViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.install_app_item, parent, false)
-        return AppItemViewHolder(view, onItemClickListener)
+        return AppItemViewHolder(view)
     }
 
     override fun getItemCount() = shownApps.size
@@ -38,6 +38,13 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
     override fun onBindViewHolder(holder: AppItemViewHolder, position: Int) {
         val app = shownApps[position]
         holder.bind(app)
+    }
+
+    fun onItemClick(position: Int) {
+        val app = shownApps[position]
+        app.enabled = !app.enabled
+        notifyItemChanged(position)
+        onItemChangeListener?.onChange(shownApps[position])
     }
 
     fun filter(query: String = currQuery, filterMode: FilterMode = currFilterMode) {
@@ -65,11 +72,11 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
 
     enum class FilterMode { SHOW_ALL, SHOW_ENABLED, SHOW_DISABLED }
 
-    interface OnItemClickListener {
-        fun onClick(view: View, position: Int)
+    interface OnItemChangeListener {
+        fun onChange(item: AppInfo)
     }
 
-    inner class AppItemViewHolder(itemView: View, private val listener: OnItemClickListener) :
+    inner class AppItemViewHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView), View.OnClickListener {
         private val nameTextView: TextView = itemView.findViewById(R.id.tv_package_name)
         private val iconImageView: ImageView = itemView.findViewById(R.id.iv_app_icon)
@@ -84,29 +91,24 @@ class InstalledAppAdapter(private val apps: List<AppInfo>) :
             itemView.setOnClickListener(this)
         }
 
-        fun bind(appInfo: AppInfo) {
-            nameTextView.text = appInfo.name
-            iconImageView.setImageDrawable(appInfo.icon)
+        fun bind(app: AppInfo) {
+            nameTextView.text = app.name
+            iconImageView.setImageDrawable(app.icon)
 
             container?.run {
-                val backgroundColor = ContextCompat.getColor(
-                    itemView.context,
-                    if (appInfo.enabled) R.color.appEnabledBackground else R.color.appDisabledBackground
-                )
-                setBackgroundColor(backgroundColor)
+                val bgrColor = ContextCompat.getColor(itemView.context, if (app.enabled)
+                        R.color.appEnabledBackground else R.color.appDisabledBackground)
+                setBackgroundColor(bgrColor)
             }
 
-            appInfo.soundProfile?.run {
-                volumeLevelTextViews.forEachIndexed { index, textView ->
-                    textView.text = if (enabled[index] && volumes[index] > -1)
-                        volumes[index].toString() else "—"
-                }
+            volumeLevelTextViews.forEachIndexed { index, textView ->
+                textView.text = if (app.volumes[index] >= 0) app.volumes[index].toString() else "—"
             }
         }
 
         override fun onClick(v: View?) {
             if (v != null && adapterPosition != RecyclerView.NO_POSITION) {
-                listener.onClick(v, adapterPosition)
+                onItemClick(adapterPosition)
             }
         }
     }

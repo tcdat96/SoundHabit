@@ -34,7 +34,6 @@ class ScanForegroundService : Service() {
                         // save current volume for previous app
                         if (StorageUtil.hasPackage(prevPackage)) {
                             StorageUtil.saveCurrentVolume(prevPackage, soundMode, currVolume)
-                            Log.d(TAG, "$prevPackage: $soundMode at $currVolume")
                         }
                         // load previously saved volume of current app
                         StorageUtil.getPreviousVolume(packageName, soundMode)?.let {

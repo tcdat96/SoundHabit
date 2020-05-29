@@ -1,6 +1,5 @@
 package com.example.soundhabit
 
-import StorageUtil
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -15,6 +14,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.soundhabit.data.AppInfo
 import com.example.soundhabit.ui.adapter.GridSpacingItemDecoration
 import com.example.soundhabit.ui.adapter.InstalledAppAdapter
 import com.example.soundhabit.ui.adapter.InstalledAppAdapter.FilterMode
@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var appListRecyclerView: RecyclerView? = null
-    private var appAdapter: InstalledAppAdapter? = null
+    private var appAdapter = InstalledAppAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         setUpToolbarTitle()
         setUpSearchBox()
         setUpFilterChips()
-        
+
         setUpAppsListView()
     }
 
@@ -61,13 +61,15 @@ class MainActivity : AppCompatActivity() {
                 // save new package or get existing sound profile
                 val iterator = listIterator()
                 while (iterator.hasNext()) {
-                    val appInfo = iterator.next()
-                    appInfo.soundProfile = StorageUtil.savePackage(appInfo.packageName)
-                    iterator.set(appInfo)
+                    val app = iterator.next()
+                    StorageUtil.savePackage(app.packageName)?.run {
+                        app.enabled = enabled
+                        app.volumes.addAll(volumes)
+                        iterator.set(app)
+                    }
                 }
                 // update the adapter
-                appAdapter = InstalledAppAdapter(this)
-                appListRecyclerView?.adapter = appAdapter
+                appAdapter.apps = this
             }
         }
     }
@@ -106,7 +108,7 @@ class MainActivity : AppCompatActivity() {
                 val state = layoutManager?.onSaveInstanceState()
                 // filter query
                 val query = text.toString().trim()
-                appAdapter?.filter(query)
+                appAdapter.filter(query)
                 state?.run { layoutManager.onRestoreInstanceState(state) }
             }
 
@@ -128,7 +130,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.chip_disabled_apps -> FilterMode.SHOW_DISABLED
                 else -> FilterMode.SHOW_ALL
             }.let { mode ->
-                appAdapter?.filter(filterMode = mode)
+                appAdapter.filter(filterMode = mode)
             }
         }
 
@@ -138,11 +140,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpAppsListView() {
+        appAdapter.onItemChangeListener = object : InstalledAppAdapter.OnItemChangeListener {
+            override fun onChange(item: AppInfo) {
+                StorageUtil.setPackageEnable(item.packageName, item.enabled)
+            }
+        }
+
         appListRecyclerView = findViewById<RecyclerView>(R.id.rv_installed_apps).apply {
             val spanCount = 2
             layoutManager = GridLayoutManager(context, spanCount)
-            itemAnimator = DefaultItemAnimator()
             adapter = appAdapter
+            itemAnimator = DefaultItemAnimator()
             addItemDecoration(GridSpacingItemDecoration(spanCount, dpToPx(context, 16f)))
             setHasFixedSize(true)
         }

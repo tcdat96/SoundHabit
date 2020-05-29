@@ -1,13 +1,15 @@
 import AudioUtil.SoundMode
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 
 object StorageUtil {
     private const val TAG = "StorageUtil"
-    private const val INVALID_VOLUME = -1
+
+    private const val VOLUME_NOT_SET = -1
 
     private var sharedPref: SharedPreferences? = null
 
@@ -31,29 +33,27 @@ object StorageUtil {
     fun getPreviousVolume(packageName: String, soundMode: SoundMode): Int? {
         return getSoundProfile(packageName)?.run {
             val index = getSoundModeIndex(soundMode)
-            return if (enabled[index] && volumes[index] != INVALID_VOLUME)
-                volumes[index]
-            else null
+            return if (enabled && volumes[index] >= 0) volumes[index] else null
         }
     }
 
     @UnstableDefault
     fun saveCurrentVolume(packageName: String, soundMode: SoundMode, volume: Int) {
         getSoundProfile(packageName)?.let { profile ->
+            if (!profile.enabled) return
             val index = getSoundModeIndex(soundMode)
-            if (profile.enabled[index]) {
-                profile.volumes[index] = volume
-                savePackageData(packageName, profile)
-            }
+            profile.volumes[index] = volume
+            savePackageData(packageName, profile)
+            Log.d(TAG, "$packageName: $soundMode at $volume")
         }
     }
 
     @UnstableDefault
-    fun setPackageEnable(packageName: String, soundMode: SoundMode, enabled: Boolean) {
+    fun setPackageEnable(packageName: String, enabled: Boolean) {
         getSoundProfile(packageName)?.let { profile ->
-            val index = getSoundModeIndex(soundMode)
-            profile.enabled[index] = enabled
+            profile.enabled = enabled
             savePackageData(packageName, profile)
+            Log.d(TAG, "$packageName is ${if (enabled) "enabled" else "disabled"}")
         }
     }
 
@@ -90,6 +90,7 @@ object StorageUtil {
 
     @Serializable
     data class SoundProfile(
-        val volumes: ArrayList<Int> = arrayListOf(-1, -1, -1),
-        val enabled: ArrayList<Boolean> = arrayListOf(true, true, true))
+        var enabled: Boolean = false,
+        val volumes: ArrayList<Int> = arrayListOf(VOLUME_NOT_SET, VOLUME_NOT_SET, VOLUME_NOT_SET)
+    )
 }
