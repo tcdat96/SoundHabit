@@ -1,4 +1,4 @@
-package com.example.soundhabit.ui.adapter
+package com.todaystudio.soha.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -9,8 +9,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.soundhabit.R
-import com.example.soundhabit.data.AppInfo
+import com.todaystudio.soha.R
+import com.todaystudio.soha.data.AppInfo
 
 class InstalledAppAdapter :
     RecyclerView.Adapter<InstalledAppAdapter.AppItemViewHolder>() {

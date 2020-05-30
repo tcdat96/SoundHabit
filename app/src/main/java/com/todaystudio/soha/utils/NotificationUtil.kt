@@ -3,8 +3,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.example.soundhabit.MainActivity
-import com.example.soundhabit.R
+import com.todaystudio.soha.MainActivity
+import com.todaystudio.soha.R
 
 object NotificationUtil {
     fun getNotification(context: Context, channelId: String): Notification {

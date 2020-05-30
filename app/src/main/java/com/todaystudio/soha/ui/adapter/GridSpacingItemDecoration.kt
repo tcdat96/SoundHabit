@@ -1,4 +1,4 @@
-package com.example.soundhabit.ui.adapter
+package com.todaystudio.soha.ui.adapter
 
 import android.graphics.Rect
 import android.view.View

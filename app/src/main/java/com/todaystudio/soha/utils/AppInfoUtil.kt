@@ -1,4 +1,4 @@
-package com.example.soundhabit.utils
+package com.todaystudio.soha.utils
 
 import android.annotation.TargetApi
 import android.app.AppOpsManager
@@ -7,7 +7,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Process
-import com.example.soundhabit.data.AppInfo
+import com.todaystudio.soha.data.AppInfo
 
 object AppInfoUtil {
     fun getInstalledApps(context: Context): MutableList<AppInfo>? {

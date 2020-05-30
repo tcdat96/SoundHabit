@@ -1,4 +1,4 @@
-package com.example.soundhabit.utils
+package com.todaystudio.soha.utils
 
 import android.content.Context
 import android.util.TypedValue

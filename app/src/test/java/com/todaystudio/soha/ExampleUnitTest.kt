@@ -1,4 +1,4 @@
-package com.example.soundhabit
+package com.todaystudio.soha
 
 import org.junit.Test
 

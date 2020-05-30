@@ -1,7 +1,7 @@
-package com.example.soundhabit.ui.adapter
+package com.todaystudio.soha.ui.adapter
 
 import androidx.recyclerview.widget.DiffUtil
-import com.example.soundhabit.data.AppInfo
+import com.todaystudio.soha.data.AppInfo
 
 class AppDiffCallback(private val oldList: List<AppInfo>, private val newList: List<AppInfo>)
     : DiffUtil.Callback() {

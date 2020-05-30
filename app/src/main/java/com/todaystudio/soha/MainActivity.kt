@@ -1,4 +1,4 @@
-package com.example.soundhabit
+package com.todaystudio.soha
 
 import android.content.Intent
 import android.graphics.Color
@@ -14,13 +14,13 @@ import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.soundhabit.data.AppInfo
-import com.example.soundhabit.ui.adapter.GridSpacingItemDecoration
-import com.example.soundhabit.ui.adapter.InstalledAppAdapter
-import com.example.soundhabit.ui.adapter.InstalledAppAdapter.FilterMode
-import com.example.soundhabit.utils.AppInfoUtil
-import com.example.soundhabit.utils.DataUtil
-import com.example.soundhabit.utils.ViewUtil.dpToPx
+import com.todaystudio.soha.data.AppInfo
+import com.todaystudio.soha.ui.adapter.GridSpacingItemDecoration
+import com.todaystudio.soha.ui.adapter.InstalledAppAdapter
+import com.todaystudio.soha.ui.adapter.InstalledAppAdapter.FilterMode
+import com.todaystudio.soha.utils.AppInfoUtil
+import com.todaystudio.soha.utils.DataUtil
+import com.todaystudio.soha.utils.ViewUtil.dpToPx
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.chip.Chip
