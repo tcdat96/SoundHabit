@@ -10,6 +10,7 @@ object StorageUtil {
     private const val TAG = "StorageUtil"
 
     private const val VOLUME_NOT_SET = -1
+    private const val SERVICE_RUNNING_KEY = "isServiceRunning"
 
     private var sharedPref: SharedPreferences? = null
 

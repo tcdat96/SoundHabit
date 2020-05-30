@@ -70,17 +70,16 @@ class ScanForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        StorageUtil.init(this)
-
         HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND).apply {
             start()
             serviceLooper = looper
             serviceHandler = ServiceHandler(looper)
         }
+
+        showNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        showNotification()
         serviceHandler?.obtainMessage()?.also { msg ->
             msg.arg1 = startId
             serviceHandler?.sendMessage(msg)
