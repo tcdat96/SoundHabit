@@ -7,4 +7,6 @@
     <string name="chip_all_apps">All</string>
     <string name="chip_disabled_apps">Disabled</string>
     <string name="chip_enabled_apps">Enabled</string>
+    <string name="require_access">Soha needs Usage Access to obtain\nthe list of all installed applications</string>
+    <string name="grant">Grant access</string>
 </resources>

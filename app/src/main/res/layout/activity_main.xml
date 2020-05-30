@@ -145,6 +145,43 @@
         app:contentScrim="@color/mainBackground"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
+        <LinearLayout
+            android:id="@+id/ll_request_permission"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/expanded_toolbar_height"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="@dimen/icon_missing_permission"
+                android:layout_height="@dimen/icon_missing_permission"
+                android:src="@drawable/ic_missing_permission"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:layout_marginBottom="@dimen/spacing_small"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.3"
+                android:text="@string/require_access"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/text_size_medium" />
+
+            <Button
+                android:id="@+id/btn_grant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/appEnabledBackground"
+                android:text="@string/grant"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/text_size_medium" />
+
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_installed_apps"
             android:layout_width="match_parent"
@@ -152,6 +189,7 @@
             android:clipToPadding="false"
             android:paddingLeft="@dimen/spacing_small"
             android:paddingRight="@dimen/spacing_small"
+            android:visibility="gone"
             android:paddingBottom="?attr/actionBarSize" />
 
     </FrameLayout>

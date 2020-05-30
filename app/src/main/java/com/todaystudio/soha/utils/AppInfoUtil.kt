@@ -22,7 +22,6 @@ object AppInfoUtil {
 
     private fun isSystemPackage(pm: PackageManager, pkgInfo: ApplicationInfo): Boolean {
         return pm.getLaunchIntentForPackage(pkgInfo.packageName) == null
-//        return pkgInfo.flags and (ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
     }
 
     fun needUsageStatsPermission(context: Context): Boolean {
@@ -31,7 +30,7 @@ object AppInfoUtil {
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    fun hasUsageStatsPermission(context: Context): Boolean {
+    private fun hasUsageStatsPermission(context: Context): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         val mode = appOps.checkOpNoThrow(
             "android:get_usage_stats",

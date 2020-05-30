@@ -1,11 +1,15 @@
 package com.todaystudio.soha
 
+import StorageUtil
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.provider.Settings
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -14,6 +18,9 @@ import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.chip.Chip
 import com.todaystudio.soha.data.AppInfo
 import com.todaystudio.soha.ui.adapter.GridSpacingItemDecoration
 import com.todaystudio.soha.ui.adapter.InstalledAppAdapter
@@ -21,11 +28,7 @@ import com.todaystudio.soha.ui.adapter.InstalledAppAdapter.FilterMode
 import com.todaystudio.soha.utils.AppInfoUtil
 import com.todaystudio.soha.utils.DataUtil
 import com.todaystudio.soha.utils.ViewUtil.dpToPx
-import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.appbar.CollapsingToolbarLayout
-import com.google.android.material.chip.Chip
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.serialization.UnstableDefault
 
 
 class MainActivity : AppCompatActivity() {
@@ -46,31 +49,72 @@ class MainActivity : AppCompatActivity() {
         setUpFilterChips()
 
         setUpAppsListView()
+        setUpAppList()
     }
 
-    @UnstableDefault
     override fun onStart() {
         super.onStart()
+        setUpAppList()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setUpAppList()
+        // workaround for views being cut off issue
+        appListRecyclerView?.run {
+            setPadding(paddingLeft, paddingTop, paddingRight, 0)
+        }
+    }
+
+    private fun setUpAppList() {
         if (AppInfoUtil.needUsageStatsPermission(this)) {
-            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+            setUpRequireAccessLayout()
         } else {
             startService()
-            StorageUtil.init(this)
-            // retrieve installed applications
-            AppInfoUtil.getInstalledApps(this)?.run {
-                // save new package or get existing sound profile
-                val iterator = listIterator()
-                while (iterator.hasNext()) {
-                    val app = iterator.next()
-                    StorageUtil.savePackage(app.packageName)?.run {
-                        app.enabled = enabled
-                        app.volumes.addAll(volumes)
-                        iterator.set(app)
+            acquireAppList()
+        }
+    }
+
+    private fun setUpRequireAccessLayout() {
+        val reqPermissionLayout = findViewById<LinearLayout>(R.id.ll_request_permission)
+        appListRecyclerView?.visibility = View.INVISIBLE
+        reqPermissionLayout.visibility = View.VISIBLE
+
+        findViewById<Button>(R.id.btn_grant).setOnClickListener {
+            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+            // periodically check if access is granted
+            val handler = Handler()
+            (object : Runnable {
+                override fun run() {
+                    if (!AppInfoUtil.needUsageStatsPermission(this@MainActivity)) {
+                        // usage access is granted
+                        reqPermissionLayout.visibility = View.GONE
+                        startActivity(intent)
+                        return
                     }
+                    handler.postDelayed(this, 1000)
                 }
-                // update the adapter
-                appAdapter.apps = this
+            }).run()
+        }
+    }
+
+    private fun acquireAppList() {
+        StorageUtil.init(this)
+        // retrieve installed applications
+        AppInfoUtil.getInstalledApps(this)?.run {
+            // save new package or get existing sound profile
+            val iterator = listIterator()
+            while (iterator.hasNext()) {
+                val app = iterator.next()
+                StorageUtil.savePackage(app.packageName)?.run {
+                    app.enabled = enabled
+                    app.volumes.addAll(volumes)
+                    iterator.set(app)
+                }
             }
+            // update the adapter
+            appAdapter.apps = this
+            appListRecyclerView?.visibility = View.VISIBLE
         }
     }
 

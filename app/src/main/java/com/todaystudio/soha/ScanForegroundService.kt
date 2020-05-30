@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.*
 import android.util.Log
 import com.rvalerio.fgchecker.AppChecker
+import com.todaystudio.soha.utils.AppInfoUtil
 import kotlinx.serialization.UnstableDefault
 
 class ScanForegroundService : Service() {
@@ -21,35 +22,50 @@ class ScanForegroundService : Service() {
     private var serviceHandler: ServiceHandler? = null
 
     private inner class ServiceHandler(looper: Looper) : Handler(looper) {
+        private lateinit var appChecker: AppChecker
         private var prevPackage = ""
 
         @UnstableDefault
         override fun handleMessage(msg: Message) {
-            val context = this@ScanForegroundService
-            AppChecker()
-                .whenAny { packageName ->
-                    if (packageName != null && packageName.isNotEmpty() && prevPackage != packageName) {
-                        val currVolume = AudioUtil.getCurrentVolume(context)
-                        val soundMode = AudioUtil.getSoundMode(context)
-                        // save current volume for previous app
-                        if (StorageUtil.hasPackage(prevPackage)) {
-                            StorageUtil.saveCurrentVolume(prevPackage, soundMode, currVolume)
-                        }
-                        // load previously saved volume of current app
-                        StorageUtil.getPreviousVolume(packageName, soundMode)?.let {
-                            if (it != currVolume) {
-                                AudioUtil.setCurrentVolume(context, it)
-                                Log.d(TAG, "$packageName: set to $it")
-                            }
-                        }
+            appChecker = AppChecker().apply {
+                whenAny { handlePackageChange(it) }
+                timeout(SCAN_INTERVAL)
+                start(this@ScanForegroundService)
+            }
+        }
 
-                        prevPackage = packageName
+        @UnstableDefault
+        fun handlePackageChange(packageName: String?) {
+            val context = this@ScanForegroundService
+            if (packageName == null) {
+                if (AppInfoUtil.needUsageStatsPermission(context)) {
+                    appChecker.stop()
+                    stopSelf()
+                }
+                return
+            }
+
+            if (packageName.isNotEmpty() && prevPackage != packageName) {
+                val currVolume = AudioUtil.getCurrentVolume(context)
+                val soundMode = AudioUtil.getSoundMode(context)
+                // save current volume for previous app
+                if (StorageUtil.hasPackage(prevPackage)) {
+                    StorageUtil.saveCurrentVolume(prevPackage, soundMode, currVolume)
+                }
+                // load previously saved volume of current app
+                StorageUtil.getPreviousVolume(packageName, soundMode)?.let {
+                    if (it != currVolume) {
+                        AudioUtil.setCurrentVolume(context, it)
+                        Log.d(TAG, "$packageName: set to $it")
                     }
                 }
-                .timeout(SCAN_INTERVAL)
-                .start(context)
+
+                prevPackage = packageName
+            }
         }
     }
+
+
 
     override fun onCreate() {
         super.onCreate()
