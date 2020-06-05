@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +23,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.chip.Chip
 import com.todaystudio.soha.data.AppInfo
+import com.todaystudio.soha.model.AppInfoViewModel
 import com.todaystudio.soha.ui.adapter.GridSpacingItemDecoration
 import com.todaystudio.soha.ui.adapter.InstalledAppAdapter
 import com.todaystudio.soha.ui.adapter.InstalledAppAdapter.FilterMode
@@ -40,16 +42,14 @@ class MainActivity : AppCompatActivity() {
     private var appListRecyclerView: RecyclerView? = null
     private var appAdapter = InstalledAppAdapter()
 
+    private val appInfoViewModel = AppInfoViewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        setUpToolbarTitle()
-        setUpSearchBox()
-        setUpFilterChips()
-
-        setUpAppsListView()
-        setUpAppList()
+        setUpViews()
+        setUpAppData()
     }
 
     override fun onStart() {
@@ -64,6 +64,22 @@ class MainActivity : AppCompatActivity() {
         appListRecyclerView?.run {
             setPadding(paddingLeft, paddingTop, paddingRight, 0)
         }
+    }
+
+    private fun setUpViews() {
+        setUpToolbarTitle()
+        setUpSearchBox()
+        setUpFilterChips()
+
+        setUpAppsListView()
+    }
+
+    private fun setUpAppData() {
+        setUpAppList()
+
+        appInfoViewModel.getApps().observe(this, Observer { apps ->
+            showAppList(apps)
+        })
     }
 
     private fun setUpAppList() {
@@ -102,20 +118,18 @@ class MainActivity : AppCompatActivity() {
         StorageUtil.init(this)
         // retrieve installed applications
         AppInfoUtil.getInstalledApps(this)?.run {
-            // save new package or get existing sound profile
-            val iterator = listIterator()
-            while (iterator.hasNext()) {
-                val app = iterator.next()
-                StorageUtil.savePackage(app.packageName)?.run {
-                    app.enabled = enabled
-                    app.volumes.addAll(volumes)
-                    iterator.set(app)
-                }
-            }
-            // update the adapter
-            appAdapter.apps = this
-            appListRecyclerView?.visibility = View.VISIBLE
+            updateAppList(this)
         }
+    }
+
+    private fun updateAppList(apps: MutableList<AppInfo>) {
+        appListRecyclerView?.visibility = View.INVISIBLE
+        appInfoViewModel.saveApps(apps)
+    }
+
+    private fun showAppList(apps: List<AppInfo>) {
+        appAdapter.apps = apps
+        appListRecyclerView?.visibility = View.VISIBLE
     }
 
     private fun setUpToolbarTitle() {

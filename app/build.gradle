@@ -47,8 +47,12 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.1.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.android.material:material:1.2.0-alpha06'// JVM dependency
+    implementation 'com.google.android.material:material:1.3.0-alpha01'// JVM dependency
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version" // or "kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
+    implementation 'android.arch.lifecycle:viewmodel:1.1.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.7'
 }
