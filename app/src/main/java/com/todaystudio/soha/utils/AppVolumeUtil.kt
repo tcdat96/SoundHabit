@@ -7,15 +7,15 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Process
-import com.todaystudio.soha.data.AppInfo
+import com.todaystudio.soha.data.AppVolume
 
-object AppInfoUtil {
-    fun getInstalledApps(context: Context): MutableList<AppInfo>? {
+object AppVolumeUtil {
+    fun getInstalledApps(context: Context): MutableList<AppVolume>? {
         val pm = context.packageManager
         return pm?.getInstalledApplications(PackageManager.GET_META_DATA)?.run {
             filter { !isSystemPackage(pm, it) }.map { info ->
                 val appName = pm.getApplicationLabel(info) as String
-                AppInfo(info.packageName, appName, info.loadIcon(pm))
+                AppVolume(info.packageName, appName, info.loadIcon(pm))
             }.sortedBy { it.name }.toMutableList()
         }
     }

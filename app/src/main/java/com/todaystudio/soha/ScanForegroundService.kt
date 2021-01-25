@@ -8,7 +8,7 @@ import android.content.Intent
 import android.os.*
 import android.util.Log
 import com.rvalerio.fgchecker.AppChecker
-import com.todaystudio.soha.utils.AppInfoUtil
+import com.todaystudio.soha.utils.AppVolumeUtil
 import kotlinx.serialization.UnstableDefault
 
 class ScanForegroundService : Service() {
@@ -38,7 +38,7 @@ class ScanForegroundService : Service() {
         fun handlePackageChange(packageName: String?) {
             val context = this@ScanForegroundService
             if (packageName == null) {
-                if (AppInfoUtil.needUsageStatsPermission(context)) {
+                if (AppVolumeUtil.needUsageStatsPermission(context)) {
                     appChecker.stop()
                     stopSelf()
                 }

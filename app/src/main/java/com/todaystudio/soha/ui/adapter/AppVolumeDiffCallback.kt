@@ -1,9 +1,9 @@
 package com.todaystudio.soha.ui.adapter
 
 import androidx.recyclerview.widget.DiffUtil
-import com.todaystudio.soha.data.AppInfo
+import com.todaystudio.soha.data.AppVolume
 
-class AppDiffCallback(private val oldList: List<AppInfo>, private val newList: List<AppInfo>)
+class AppVolumeDiffCallback(private val oldList: List<AppVolume>, private val newList: List<AppVolume>)
     : DiffUtil.Callback() {
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {

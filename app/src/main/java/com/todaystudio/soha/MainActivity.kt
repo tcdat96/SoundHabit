@@ -22,12 +22,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.chip.Chip
-import com.todaystudio.soha.data.AppInfo
-import com.todaystudio.soha.model.AppInfoViewModel
+import com.todaystudio.soha.data.AppVolume
+import com.todaystudio.soha.model.AppVolumeViewModel
 import com.todaystudio.soha.ui.adapter.GridSpacingItemDecoration
-import com.todaystudio.soha.ui.adapter.InstalledAppAdapter
-import com.todaystudio.soha.ui.adapter.InstalledAppAdapter.FilterMode
-import com.todaystudio.soha.utils.AppInfoUtil
+import com.todaystudio.soha.ui.adapter.AppListAdapter
+import com.todaystudio.soha.ui.adapter.AppListAdapter.FilterMode
+import com.todaystudio.soha.utils.AppVolumeUtil
 import com.todaystudio.soha.utils.DataUtil
 import com.todaystudio.soha.utils.ViewUtil.dpToPx
 import kotlinx.android.synthetic.main.activity_main.*
@@ -40,9 +40,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var appListRecyclerView: RecyclerView? = null
-    private var appAdapter = InstalledAppAdapter()
+    private var appAdapter = AppListAdapter()
 
-    private val appInfoViewModel = AppInfoViewModel()
+    private val appVolumeViewModel = AppVolumeViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,13 +77,13 @@ class MainActivity : AppCompatActivity() {
     private fun setUpAppData() {
         setUpAppList()
 
-        appInfoViewModel.getApps().observe(this, Observer { apps ->
+        appVolumeViewModel.getApps().observe(this, Observer { apps ->
             showAppList(apps)
         })
     }
 
     private fun setUpAppList() {
-        if (AppInfoUtil.needUsageStatsPermission(this)) {
+        if (AppVolumeUtil.needUsageStatsPermission(this)) {
             setUpRequireAccessLayout()
         } else {
             startService()
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
             val handler = Handler()
             (object : Runnable {
                 override fun run() {
-                    if (!AppInfoUtil.needUsageStatsPermission(this@MainActivity)) {
+                    if (!AppVolumeUtil.needUsageStatsPermission(this@MainActivity)) {
                         // usage access is granted
                         reqPermissionLayout.visibility = View.GONE
                         startActivity(intent)
@@ -117,17 +117,17 @@ class MainActivity : AppCompatActivity() {
     private fun acquireAppList() {
         StorageUtil.init(this)
         // retrieve installed applications
-        AppInfoUtil.getInstalledApps(this)?.run {
+        AppVolumeUtil.getInstalledApps(this)?.run {
             updateAppList(this)
         }
     }
 
-    private fun updateAppList(apps: MutableList<AppInfo>) {
+    private fun updateAppList(apps: MutableList<AppVolume>) {
         appListRecyclerView?.visibility = View.INVISIBLE
-        appInfoViewModel.saveApps(apps)
+        appVolumeViewModel.saveApps(apps)
     }
 
-    private fun showAppList(apps: List<AppInfo>) {
+    private fun showAppList(apps: List<AppVolume>) {
         appAdapter.apps = apps
         appListRecyclerView?.visibility = View.VISIBLE
     }
@@ -198,8 +198,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpAppsListView() {
-        appAdapter.onItemChangeListener = object : InstalledAppAdapter.OnItemChangeListener {
-            override fun onChange(item: AppInfo) {
+        appAdapter.onItemChangeListener = object : AppListAdapter.OnItemChangeListener {
+            override fun onChange(item: AppVolume) {
                 StorageUtil.setPackageEnable(item.packageName, item.enabled)
             }
         }

@@ -10,12 +10,12 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.todaystudio.soha.R
-import com.todaystudio.soha.data.AppInfo
+import com.todaystudio.soha.data.AppVolume
 
-class InstalledAppAdapter :
-    RecyclerView.Adapter<InstalledAppAdapter.AppItemViewHolder>() {
+class AppListAdapter :
+    RecyclerView.Adapter<AppListAdapter.AppItemViewHolder>() {
 
-    var apps: List<AppInfo> = listOf()
+    var apps: List<AppVolume> = listOf()
         set(value) {
             field = value
             filter()
@@ -60,8 +60,8 @@ class InstalledAppAdapter :
             .run { filter(this) }
     }
 
-    private fun filter(newList: List<AppInfo>) {
-        val diffCallback = AppDiffCallback(shownApps, newList)
+    private fun filter(newList: List<AppVolume>) {
+        val diffCallback = AppVolumeDiffCallback(shownApps, newList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
 
         shownApps.clear()
@@ -73,7 +73,7 @@ class InstalledAppAdapter :
     enum class FilterMode { SHOW_ALL, SHOW_ENABLED, SHOW_DISABLED }
 
     interface OnItemChangeListener {
-        fun onChange(item: AppInfo)
+        fun onChange(item: AppVolume)
     }
 
     inner class AppItemViewHolder(itemView: View) :
@@ -91,7 +91,7 @@ class InstalledAppAdapter :
             itemView.setOnClickListener(this)
         }
 
-        fun bind(app: AppInfo) {
+        fun bind(app: AppVolume) {
             nameTextView.text = app.name
             iconImageView.setImageDrawable(app.icon)
 
@@ -102,7 +102,7 @@ class InstalledAppAdapter :
             }
 
             volumeLevelTextViews.forEachIndexed { index, textView ->
-                textView.text = if (app.volumes[index] >= 0) app.volumes[index].toString() else "—"
+                textView.text = if (app.values[index] >= 0) app.values[index].toString() else "—"
             }
         }
 
