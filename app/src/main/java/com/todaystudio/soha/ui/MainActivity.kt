@@ -1,10 +1,10 @@
-package com.todaystudio.soha
+package com.todaystudio.soha.ui
 
-import StorageUtil
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.View
 import android.widget.Button
@@ -22,34 +22,62 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.chip.Chip
-import com.todaystudio.soha.data.AppVolume
-import com.todaystudio.soha.model.AppVolumeViewModel
-import com.todaystudio.soha.ui.adapter.GridSpacingItemDecoration
+import com.todaystudio.soha.R
+import com.todaystudio.soha.services.ScanForegroundService
+import com.todaystudio.soha.data.AppVolumeRepository
+import com.todaystudio.soha.data.db.AppVolumeDatabase
+import com.todaystudio.soha.data.entity.AppVolume
+import com.todaystudio.soha.data.util.AppVolumeServiceImpl
+import com.todaystudio.soha.viewmodels.AppVolumeViewModel
 import com.todaystudio.soha.ui.adapter.AppListAdapter
 import com.todaystudio.soha.ui.adapter.AppListAdapter.FilterMode
-import com.todaystudio.soha.utils.AppVolumeUtil
+import com.todaystudio.soha.ui.adapter.GridSpacingItemDecoration
 import com.todaystudio.soha.utils.DataUtil
 import com.todaystudio.soha.utils.ViewUtil.dpToPx
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.concurrent.Executors
 
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        @Suppress("unused")
         const val TAG = "MainActivity"
     }
 
-    private var appListRecyclerView: RecyclerView? = null
     private var appAdapter = AppListAdapter()
 
-    private val appVolumeViewModel = AppVolumeViewModel()
+    private var appListRecyclerView: RecyclerView? = null
+    private var usageAccessPermLayout: LinearLayout? = null
+
+    private lateinit var appVolumeService: AppVolumeServiceImpl
+    private lateinit var appVolumeRepository: AppVolumeRepository
+    private lateinit var appVolumeViewModel: AppVolumeViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         setUpViews()
-        setUpAppData()
+
+        val database = AppVolumeDatabase.getInstance(applicationContext)
+        appVolumeService = AppVolumeServiceImpl(applicationContext)
+        appVolumeRepository = AppVolumeRepository.getInstance(database.appVolumeDao).apply {
+            init(Executors.newFixedThreadPool(4), appVolumeService)
+        }
+
+        appVolumeViewModel = AppVolumeViewModel(appVolumeRepository).apply {
+            apps.observe(this@MainActivity, Observer { apps ->
+                // update current app list
+                appAdapter.apps = apps
+            })
+            hasUsageAccess.observe(this@MainActivity, Observer { enabled ->
+                appListRecyclerView?.visibility = if (enabled) View.VISIBLE else View.GONE
+                usageAccessPermLayout?.visibility = if (enabled) View.GONE else View.VISIBLE
+            })
+        }
+
+        setUpAppList()
     }
 
     override fun onStart() {
@@ -74,62 +102,35 @@ class MainActivity : AppCompatActivity() {
         setUpAppsListView()
     }
 
-    private fun setUpAppData() {
-        setUpAppList()
-
-        appVolumeViewModel.getApps().observe(this, Observer { apps ->
-            showAppList(apps)
-        })
-    }
-
     private fun setUpAppList() {
-        if (AppVolumeUtil.needUsageStatsPermission(this)) {
+        if (appVolumeService.needUsageStatsPermission(this)) {
+            appVolumeViewModel.hasUsageAccess.postValue(false)
             setUpRequireAccessLayout()
         } else {
+            appVolumeViewModel.hasUsageAccess.postValue(true)
             startService()
-            acquireAppList()
         }
     }
 
     private fun setUpRequireAccessLayout() {
-        val reqPermissionLayout = findViewById<LinearLayout>(R.id.ll_request_permission)
-        appListRecyclerView?.visibility = View.INVISIBLE
-        reqPermissionLayout.visibility = View.VISIBLE
-
-        findViewById<Button>(R.id.btn_grant).setOnClickListener {
-            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-            // periodically check if access is granted
-            val handler = Handler()
-            (object : Runnable {
-                override fun run() {
-                    if (!AppVolumeUtil.needUsageStatsPermission(this@MainActivity)) {
-                        // usage access is granted
-                        reqPermissionLayout.visibility = View.GONE
-                        startActivity(intent)
-                        return
+        usageAccessPermLayout = findViewById<LinearLayout>(R.id.ll_request_permission).also {
+            findViewById<Button>(R.id.btn_grant).setOnClickListener {
+                startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                // periodically check if access is granted
+                val handler = Handler(Looper.getMainLooper())
+                (object : Runnable {
+                    override fun run() {
+                        if (!appVolumeService.needUsageStatsPermission(this@MainActivity)) {
+                            // usage access is granted
+                            startActivity(intent)
+                            appVolumeViewModel.hasUsageAccess.postValue(true)
+                            return
+                        }
+                        handler.postDelayed(this, 1000)
                     }
-                    handler.postDelayed(this, 1000)
-                }
-            }).run()
+                }).run()
+            }
         }
-    }
-
-    private fun acquireAppList() {
-        StorageUtil.init(this)
-        // retrieve installed applications
-        AppVolumeUtil.getInstalledApps(this)?.run {
-            updateAppList(this)
-        }
-    }
-
-    private fun updateAppList(apps: MutableList<AppVolume>) {
-        appListRecyclerView?.visibility = View.INVISIBLE
-        appVolumeViewModel.saveApps(apps)
-    }
-
-    private fun showAppList(apps: List<AppVolume>) {
-        appAdapter.apps = apps
-        appListRecyclerView?.visibility = View.VISIBLE
     }
 
     private fun setUpToolbarTitle() {
@@ -147,7 +148,6 @@ class MainActivity : AppCompatActivity() {
             }
             if (scrollRange + verticalOffset == 0) {
                 collapsingToolbarLayout.title = getString(R.string.app_name)
-                toolbar.animation
                 searchArea.visibility = View.INVISIBLE
                 isShown = true
             } else if (isShown) {
@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity() {
     private fun setUpAppsListView() {
         appAdapter.onItemChangeListener = object : AppListAdapter.OnItemChangeListener {
             override fun onChange(item: AppVolume) {
-                StorageUtil.setPackageEnable(item.packageName, item.enabled)
+                appVolumeViewModel.saveVolume(item.packageName, item.enabled)
             }
         }
 

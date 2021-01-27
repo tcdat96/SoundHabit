@@ -10,7 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.todaystudio.soha.R
-import com.todaystudio.soha.data.AppVolume
+import com.todaystudio.soha.data.entity.AppVolume
 
 class AppListAdapter :
     RecyclerView.Adapter<AppListAdapter.AppItemViewHolder>() {
@@ -28,8 +28,7 @@ class AppListAdapter :
     var onItemChangeListener: OnItemChangeListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppItemViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.install_app_item, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.install_app_item, parent, false)
         return AppItemViewHolder(view)
     }
 
@@ -80,11 +79,9 @@ class AppListAdapter :
         RecyclerView.ViewHolder(itemView), View.OnClickListener {
         private val nameTextView: TextView = itemView.findViewById(R.id.tv_package_name)
         private val iconImageView: ImageView = itemView.findViewById(R.id.iv_app_icon)
-        private val volumeLevelTextViews = listOf<TextView>(
-            itemView.findViewById(R.id.tv_speaker_volume),
-            itemView.findViewById(R.id.tv_wired_volume),
-            itemView.findViewById(R.id.tv_bluetooth_volume)
-        )
+        private val speakerTextView: TextView = itemView.findViewById(R.id.tv_speaker_volume)
+        private val wiredTextView: TextView = itemView.findViewById(R.id.tv_wired_volume)
+        private val bluetoothTextView: TextView = itemView.findViewById(R.id.tv_bluetooth_volume)
         private var container = nameTextView.parent as? ConstraintLayout
 
         init {
@@ -93,17 +90,19 @@ class AppListAdapter :
 
         fun bind(app: AppVolume) {
             nameTextView.text = app.name
-            iconImageView.setImageDrawable(app.icon)
+
+            app.icon?.run { iconImageView.setImageDrawable(this) }
 
             container?.run {
-                val bgrColor = ContextCompat.getColor(itemView.context, if (app.enabled)
-                        R.color.appEnabledBackground else R.color.appDisabledBackground)
+                val bgrColor = ContextCompat.getColor(itemView.context,
+                    if (app.enabled) R.color.appEnabledBackground else R.color.appDisabledBackground
+                )
                 setBackgroundColor(bgrColor)
             }
 
-            volumeLevelTextViews.forEachIndexed { index, textView ->
-                textView.text = if (app.values[index] >= 0) app.values[index].toString() else "—"
-            }
+            speakerTextView.text = if (app.speakerVolume >= 0) app.speakerVolume.toString() else "-"
+            wiredTextView.text = if (app.wiredVolume >= 0) app.wiredVolume.toString() else "-"
+            bluetoothTextView.text = if (app.bleVolume >= 0) app.bleVolume.toString() else "-"
         }
 
         override fun onClick(v: View?) {

@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import androidx.core.app.NotificationCompat
-import com.todaystudio.soha.MainActivity
 import com.todaystudio.soha.R
 
 object NotificationUtil {

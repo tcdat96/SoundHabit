@@ -1,7 +1,7 @@
 package com.todaystudio.soha.ui.adapter
 
 import androidx.recyclerview.widget.DiffUtil
-import com.todaystudio.soha.data.AppVolume
+import com.todaystudio.soha.data.entity.AppVolume
 
 class AppVolumeDiffCallback(private val oldList: List<AppVolume>, private val newList: List<AppVolume>)
     : DiffUtil.Callback() {
