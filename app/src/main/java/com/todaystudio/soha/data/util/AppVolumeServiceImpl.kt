@@ -10,7 +10,7 @@ import android.os.Process
 import com.todaystudio.soha.data.entity.AppVolume
 
 class AppVolumeServiceImpl(private val context: Context) : AppVolumeService {
-    override fun getInstalledApps(): MutableList<AppVolume>? {
+    override fun getInstalledApps(): List<AppVolume>? {
         val pm = context.packageManager
         return pm?.getInstalledApplications(PackageManager.GET_META_DATA)?.run {
             filter { !isSystemPackage(pm, it) }.map { app ->
@@ -19,7 +19,7 @@ class AppVolumeServiceImpl(private val context: Context) : AppVolumeService {
                     name = appName
                     icon = app.loadIcon(pm)
                 }
-            }.sortedBy { it.name }.toMutableList()
+            }.sortedBy { it.name }
         }
     }
 

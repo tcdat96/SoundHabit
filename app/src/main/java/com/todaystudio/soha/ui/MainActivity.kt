@@ -23,19 +23,18 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.chip.Chip
 import com.todaystudio.soha.R
-import com.todaystudio.soha.services.ScanForegroundService
 import com.todaystudio.soha.data.AppVolumeRepository
 import com.todaystudio.soha.data.db.AppVolumeDatabase
 import com.todaystudio.soha.data.entity.AppVolume
 import com.todaystudio.soha.data.util.AppVolumeServiceImpl
-import com.todaystudio.soha.viewmodels.AppVolumeViewModel
+import com.todaystudio.soha.services.ScanForegroundService
 import com.todaystudio.soha.ui.adapter.AppListAdapter
 import com.todaystudio.soha.ui.adapter.AppListAdapter.FilterMode
 import com.todaystudio.soha.ui.adapter.GridSpacingItemDecoration
 import com.todaystudio.soha.utils.DataUtil
 import com.todaystudio.soha.utils.ViewUtil.dpToPx
+import com.todaystudio.soha.viewmodels.AppVolumeViewModel
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.concurrent.Executors
 
 
 class MainActivity : AppCompatActivity() {
@@ -63,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         val database = AppVolumeDatabase.getInstance(applicationContext)
         appVolumeService = AppVolumeServiceImpl(applicationContext)
         appVolumeRepository = AppVolumeRepository.getInstance(database.appVolumeDao).apply {
-            init(Executors.newFixedThreadPool(4), appVolumeService)
+            init(appVolumeService)
         }
 
         appVolumeViewModel = AppVolumeViewModel(appVolumeRepository).apply {

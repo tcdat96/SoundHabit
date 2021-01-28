@@ -1,15 +1,13 @@
 package com.todaystudio.soha.data
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.liveData
 import com.todaystudio.soha.data.db.AppVolumeDao
-import com.todaystudio.soha.data.util.AppVolumeService
 import com.todaystudio.soha.data.entity.AppVolume
-import kotlinx.serialization.Serializable
-import java.util.concurrent.Executor
+import com.todaystudio.soha.data.util.AppVolumeService
 
 class AppVolumeRepository private constructor(private val appVolumeDao: AppVolumeDao) {
 
-    private var executor: Executor? = null
     private var appVolumeService: AppVolumeService? = null
 
     companion object {
@@ -22,40 +20,40 @@ class AppVolumeRepository private constructor(private val appVolumeDao: AppVolum
             }
     }
 
-    fun init(executor: Executor, appVolumeService: AppVolumeService) {
-        this.executor = executor
+    fun init(appVolumeService: AppVolumeService) {
         this.appVolumeService = appVolumeService
     }
 
-    fun getAllVolumes(): LiveData<List<AppVolume>> {
+    fun getAllVolumes(): LiveData<List<AppVolume>> = liveData {
+        emitSource(appVolumeDao.loadAll())
         refreshAppVolumeList()
-        return appVolumeDao.loadAll()
     }
 
-    private fun refreshAppVolumeList() {
-        executor?.execute {
-            appVolumeService?.getInstalledApps()?.run {
-                appVolumeDao.insert(this)
+    private suspend fun refreshAppVolumeList() {
+        appVolumeService?.getInstalledApps()?.let { installs ->
+            appVolumeDao.loadAll().value?.map { it.packageName }?.toSet()?.let { existed ->
+                val newApps = installs.filter { install -> install.packageName !in existed}
+                appVolumeDao.insert(newApps)
             }
         }
     }
 
-    fun getVolume(pkgName: String): AppVolume? {
+    suspend fun getVolume(pkgName: String): AppVolume? {
         return appVolumeDao.load(pkgName)
     }
 
-    fun save(pkgName: String, enabled: Boolean) {
+    suspend fun save(pkgName: String, enabled: Boolean) {
         getVolume(pkgName)?.run {
             this.enabled = enabled
             save(this)
         }
     }
 
-    fun save(volume: AppVolume) {
+    suspend fun save(volume: AppVolume) {
         appVolumeDao.insert(volume)
     }
 
-    fun save(volume: List<AppVolume>) {
+    suspend fun save(volume: List<AppVolume>) {
         appVolumeDao.insert(volume)
     }
 }

@@ -21,7 +21,7 @@ object AudioUtil {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager?
         return audioManager?.run {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val audioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_ALL)
+                val audioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
                 for (deviceInfo in audioDevices) {
                     when (deviceInfo.type) {
                         AudioDeviceInfo.TYPE_WIRED_HEADPHONES, AudioDeviceInfo.TYPE_WIRED_HEADSET -> return SoundMode.WIRED

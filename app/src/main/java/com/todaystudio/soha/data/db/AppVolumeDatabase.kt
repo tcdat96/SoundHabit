@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.todaystudio.soha.data.entity.AppVolume
 
-@Database(entities = [AppVolume::class], version = 1)
+@Database(entities = [AppVolume::class], version = 1, exportSchema = false)
 abstract class AppVolumeDatabase: RoomDatabase() {
     abstract val appVolumeDao: AppVolumeDao
 

@@ -10,9 +10,11 @@ import android.util.Log
 import com.rvalerio.fgchecker.AppChecker
 import com.todaystudio.soha.data.AppVolumeRepository
 import com.todaystudio.soha.data.db.AppVolumeDatabase
+import kotlinx.coroutines.*
 import kotlinx.serialization.UnstableDefault
+import kotlin.coroutines.CoroutineContext
 
-class ScanForegroundService() : Service() {
+class ScanForegroundService : Service(), CoroutineScope {
     companion object {
         const val TAG = "ScanForegroundService"
         const val SCAN_INTERVAL = 5000
@@ -23,6 +25,10 @@ class ScanForegroundService() : Service() {
     private var serviceHandler: ServiceHandler? = null
 
     private lateinit var repository: AppVolumeRepository
+
+    private val serviceJob = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + serviceJob
 
     override fun onCreate() {
         super.onCreate()
@@ -58,6 +64,7 @@ class ScanForegroundService() : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceJob.cancel()
         Log.d(TAG, "Service is destroyed")
     }
 
@@ -88,26 +95,34 @@ class ScanForegroundService() : Service() {
                 val currVolume = AudioUtil.getCurrentVolume(context)
                 val soundMode = AudioUtil.getSoundMode(context)
 
-                // save current volume for previous app
-                repository.getVolume(prevPackage)?.run {
-                    when (soundMode) {
-                        SoundMode.SPEAKER -> speakerVolume = currVolume
-                        SoundMode.WIRED -> wiredVolume = currVolume
-                        SoundMode.BLUETOOTH -> bleVolume = currVolume
+                val finalSavedPackage = prevPackage
+                launch {
+                    // save current volume for previous app
+                    repository.getVolume(finalSavedPackage)?.run {
+                        when (soundMode) {
+                            SoundMode.SPEAKER -> speakerVolume = currVolume
+                            SoundMode.WIRED -> wiredVolume = currVolume
+                            SoundMode.BLUETOOTH -> bleVolume = currVolume
+                        }
+                        repository.save(this)
+                        Log.d(TAG, "${this.packageName}: save as $currVolume")
                     }
-                    repository.save(this)
-                }
 
-                // load previously saved volume of current app
-                repository.getVolume(packageName)?.run {
-                    val volume = when (soundMode) {
-                        SoundMode.SPEAKER -> speakerVolume
-                        SoundMode.WIRED -> wiredVolume
-                        SoundMode.BLUETOOTH -> bleVolume
-                    }
-                    if (volume != currVolume) {
-                        AudioUtil.setCurrentVolume(context, volume)
-                        Log.d(TAG, "$packageName: set to $volume")
+                    // load previously saved volume of current app
+                    repository.getVolume(packageName)?.run {
+                        if (!enabled) {
+                            return@run
+                        }
+
+                        val volume = when (soundMode) {
+                            SoundMode.SPEAKER -> speakerVolume
+                            SoundMode.WIRED -> wiredVolume
+                            SoundMode.BLUETOOTH -> bleVolume
+                        }
+                        if (volume != currVolume) {
+                            AudioUtil.setCurrentVolume(context, volume)
+                            Log.d(TAG, "${this.packageName}: set to $volume")
+                        }
                     }
                 }
 
